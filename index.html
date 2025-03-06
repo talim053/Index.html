@@ -1,74 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Location Access Control</title>
+    <title>Location-Based Data Form</title>
 </head>
 <body>
-    <h2>Store Access System</h2>
-    <p id="status">Checking location...</p>
+    <h2>Data Submission Form</h2>
+    <p id="locationStatus" style="color: red;">Checking location...</p>
+    <form id="userForm" style="display: none;">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select><br><br>
+        
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
     <p id="confirmation" style="color: green; display: none;">Data Sent Successfully!</p>
+    <p id="error" style="color: red; display: none;">Error sending data.</p>
+    
     <script>
-        const storeLat = 28.22315741881459;
-        const storeLng = 77.09913041100037;
-        const accessRadius = 200; // 200 meters
+        const allowedLatitude = 28.22315741881459;
+        const allowedLongitude = 77.09913041100037;
+        const allowedRadius = 200; // in meters
 
-        function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
+        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
             function deg2rad(deg) {
-                return deg * (Math.PI/180);
+                return deg * (Math.PI / 180);
             }
-            const R = 6371e3;
-            const dLat = deg2rad(lat2-lat1);
-            const dLon = deg2rad(lon2-lon1);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
+            var R = 6371000; // Radius of the Earth in meters
+            var dLat = deg2rad(lat2 - lat1);
+            var dLon = deg2rad(lon2 - lon1);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var distance = R * c;
+            return distance;
         }
 
-        function checkLocation(position) {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
-            const distance = getDistanceFromLatLonInM(userLat, userLng, storeLat, storeLng);
-            
-            if (distance <= accessRadius) {
-                document.getElementById("status").innerText = "Access Granted";
-                sendDataToGoogleSheets(userLat, userLng, "Granted");
+        function checkLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+                    const distance = getDistanceFromLatLonInMeters(userLat, userLon, allowedLatitude, allowedLongitude);
+                    
+                    if (distance <= allowedRadius) {
+                        document.getElementById("locationStatus").innerText = "Access Granted: You are within the allowed area.";
+                        document.getElementById("locationStatus").style.color = "green";
+                        document.getElementById("userForm").style.display = "block";
+                    } else {
+                        document.getElementById("locationStatus").innerText = "Access Denied: You are outside the allowed area.";
+                        document.getElementById("locationStatus").style.color = "red";
+                    }
+                }, () => {
+                    document.getElementById("locationStatus").innerText = "Error: Unable to retrieve location.";
+                });
             } else {
-                document.getElementById("status").innerText = "Access Denied";
-                sendDataToGoogleSheets(userLat, userLng, "Denied");
+                document.getElementById("locationStatus").innerText = "Geolocation is not supported by this browser.";
             }
         }
 
-        function sendDataToGoogleSheets(lat, lng, status) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbzhSfDW1sE6lhr_QNLMz25tAa-wIjZOsWFb1LgKtQJaAmOW8qoJOoOU1_JHaBy4j3Vm/exec';
+        checkLocation();
+
+        function sendDataToGoogleSheets(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById("name").value;
+            const gender = document.getElementById("gender").value;
+            const age = document.getElementById("age").value;
+            
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbxNbiisZDcc6E_QxdXXs-xgRmk2Ri0umcTzP_gd13MSLugQexXg14Bkk38Pe1ldVI7R/exec';
+            
+            const formData = new URLSearchParams();
+            formData.append("name", name);
+            formData.append("gender", gender);
+            formData.append("age", age);
             
             fetch(scriptURL, {
                 method: 'POST',
-                body: JSON.stringify({latitude: lat, longitude: lng, access_status: status}),
-                headers: { 'Content-Type': 'application/json' }
-            }).then(response => response.text())
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(response => response.json())
             .then(data => {
                 console.log("Server Response:", data);
-                if (data.includes("Success")) {
+                if (data.result === "success") {
                     document.getElementById("confirmation").style.display = "block";
+                    document.getElementById("error").style.display = "none";
                 } else {
-                    document.getElementById("status").innerText = "Error sending data: " + data;
+                    document.getElementById("error").innerText = "Error: " + data.error;
+                    document.getElementById("error").style.display = "block";
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById("status").innerText = "Fetch error: " + error;
+                document.getElementById("error").innerText = "Fetch error: " + error;
+                document.getElementById("error").style.display = "block";
             });
         }
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(checkLocation, () => {
-                document.getElementById("status").innerText = "Location access denied by user";
-            });
-        } else {
-            document.getElementById("status").innerText = "Geolocation not supported";
-        }
+        document.getElementById("userForm").addEventListener("submit", sendDataToGoogleSheets);
     </script>
 </body>
 </html>
