@@ -6,6 +6,7 @@
 <body>
     <h2>Store Access System</h2>
     <p id="status">Checking location...</p>
+    <p id="confirmation" style="color: green; display: none;">Data Sent Successfully!</p>
     <script>
         const storeLat = 28.22315741881459;
         const storeLng = 77.09913041100037;
@@ -45,7 +46,11 @@
                 method: 'POST',
                 body: JSON.stringify({latitude: lat, longitude: lng, access_status: status}),
                 headers: { 'Content-Type': 'application/json' }
-            });
+            }).then(response => {
+                if (response.ok) {
+                    document.getElementById("confirmation").style.display = "block";
+                }
+            }).catch(error => console.error('Error:', error));
         }
 
         if (navigator.geolocation) {
