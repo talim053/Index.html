@@ -1,38 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Location-Based Data Form</title>
+    <title>Professional Data Form</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
+            background-color: #87CEEB;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .background-logo {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.7;
+            width: 200px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.7);
             padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+            position: relative;
+            z-index: 1;
         }
         h2 {
             color: #333;
         }
-        #locationStatus {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        form {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-            text-align: left;
-        }
-        label {
-            font-weight: bold;
-        }
-        input, select, button {
+        select, button {
             width: 100%;
             padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
+            margin: 10px 0;
             border: 1px solid #ccc;
+            border-radius: 5px;
         }
         button {
             background-color: #28a745;
@@ -43,88 +51,51 @@
         button:hover {
             background-color: #218838;
         }
+        p {
+            display: none;
+            font-size: 14px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
-    <h2>Data Submission Form</h2>
-    <p id="locationStatus" style="color: red;">Checking location...</p>
-    <form id="userForm" style="display: none;">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        
-        <label for="gender">Gender:</label>
-        <select id="gender" name="gender" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-        </select><br><br>
-        
-        <label for="age">Age:</label>
-        <input type="number" id="age" name="age" required><br><br>
-        
-        <button type="submit">Submit</button>
-    </form>
-    <p id="confirmation" style="color: green; display: none;">Data Sent Successfully!</p>
-    <p id="error" style="color: red; display: none;">Error sending data.</p>
+    <img src="https://farmako.in/_next/static/media/nav-logo-light.531ec796.svg" class="background-logo" alt="Farmako Logo">
+    <div class="container">
+        <h2>Submit Your Data</h2>
+        <form id="userForm">
+            <select id="name" name="name" required>
+                <option value="Bakir">Bakir</option>
+                <option value="Talim">Talim</option>
+                <option value="Sahil">Sahil</option>
+                <option value="Ali">Ali</option>
+            </select>
+            <select id="status" name="status" required>
+                <option value="Check In">Check In</option>
+                <option value="Check Out">Check Out</option>
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+        <p id="confirmation" class="success">Data Sent Successfully!</p>
+        <p id="error" class="error">Error sending data.</p>
+    </div>
     
     <script>
-        const allowedLatitude = 28.22315741881459;
-        const allowedLongitude = 77.09913041100037;
-        const allowedRadius = 200; // in meters
-
-        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-            function deg2rad(deg) {
-                return deg * (Math.PI / 180);
-            }
-            var R = 6371000; // Radius of the Earth in meters
-            var dLat = deg2rad(lat2 - lat1);
-            var dLon = deg2rad(lon2 - lon1);
-            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            var distance = R * c;
-            return distance;
-        }
-
-        function checkLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const userLat = position.coords.latitude;
-                    const userLon = position.coords.longitude;
-                    const distance = getDistanceFromLatLonInMeters(userLat, userLon, allowedLatitude, allowedLongitude);
-                    
-                    if (distance <= allowedRadius) {
-                        document.getElementById("locationStatus").innerText = "Access Granted: You are within the allowed area.";
-                        document.getElementById("locationStatus").style.color = "green";
-                        document.getElementById("userForm").style.display = "block";
-                    } else {
-                        document.getElementById("locationStatus").innerText = "Access Denied: You are outside the allowed area.";
-                        document.getElementById("locationStatus").style.color = "red";
-                    }
-                }, () => {
-                    document.getElementById("locationStatus").innerText = "Error: Unable to retrieve location.";
-                });
-            } else {
-                document.getElementById("locationStatus").innerText = "Geolocation is not supported by this browser.";
-            }
-        }
-
-        checkLocation();
-
         function sendDataToGoogleSheets(event) {
             event.preventDefault();
             
             const name = document.getElementById("name").value;
-            const gender = document.getElementById("gender").value;
-            const age = document.getElementById("age").value;
+            const status = document.getElementById("status").value;
             
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbxNbiisZDcc6E_QxdXXs-xgRmk2Ri0umcTzP_gd13MSLugQexXg14Bkk38Pe1ldVI7R/exec';
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbw-kUMshfJpbv4WwKyohvvmFv34cmvbYQXAtNTJHjhW4pDhsbeFw5AlEJJcBmfZKd40/exec';
             
             const formData = new URLSearchParams();
             formData.append("name", name);
-            formData.append("gender", gender);
-            formData.append("age", age);
+            formData.append("status", status);
             
             fetch(scriptURL, {
                 method: 'POST',
