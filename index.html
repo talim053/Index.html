@@ -1,70 +1,60 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Attendance System</title>
+    <title>Location Access Control</title>
+</head>
+<body>
+    <h2>Store Access System</h2>
+    <p id="status">Checking location...</p>
     <script>
-        // Store Location (Latitude, Longitude)
-        const storeLatitude = 28.467152; // Replace with your store's latitude
-        const storeLongitude= 77.081427; // Replace with your store's longitude
-        const allowedRadius = 100; // Allowed distance in meters
+        const storeLat = 28.22315741881459;
+        const storeLng = 77.09913041100037;
+        const accessRadius = 200; // 200 meters
 
-        // Function to calculate distance using Haversine formula
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Earth radius in meters
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δφ = (lat2 - lat1) * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return R * c; // Distance in meters
+        function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
+            function deg2rad(deg) {
+                return deg * (Math.PI/180);
+            }
+            const R = 6371e3;
+            const dLat = deg2rad(lat2-lat1);
+            const dLon = deg2rad(lon2-lon1);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
-        // Check user's location
-        function checkLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const userLat = position.coords.latitude;
-                    const userLon = position.coords.longitude;
-                    const distance = getDistance(storeLatitude, storeLongitude, userLat, userLon);
-
-                    if (distance <= allowedRadius) {
-                        document.getElementById("attendance-form").style.display = "block";
-                        document.getElementById("error-message").style.display = "none";
-                    } else {
-                        document.getElementById("error-message").innerHTML = "Access Denied! You are outside the allowed range.";
-                        document.getElementById("error-message").style.display = "block";
-                        document.getElementById("attendance-form").style.display = "none";
-                    }
-                }, () => {
-                    document.getElementById("error-message").innerHTML = "Location access denied!";
-                    document.getElementById("error-message").style.display = "block";
-                });
+        function checkLocation(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const distance = getDistanceFromLatLonInM(userLat, userLng, storeLat, storeLng);
+            
+            if (distance <= accessRadius) {
+                document.getElementById("status").innerText = "Access Granted";
+                sendDataToGoogleSheets(userLat, userLng, "Granted");
             } else {
-                document.getElementById("error-message").innerHTML = "Geolocation is not supported by your browser.";
-                document.getElementById("error-message").style.display = "block";
+                document.getElementById("status").innerText = "Access Denied";
+                sendDataToGoogleSheets(userLat, userLng, "Denied");
             }
         }
-    </script>
-</head>
-<body onload="checkLocation()">
-    <h2>QR Code Attendance System</h2>
-    <p id="error-message" style="color: red; display: none;"></p>
 
-    <div id="attendance-form" style="display: none;">
-        <form action="https://script.google.com/macros/s/YOUR_GOOGLE_SCRIPT_URL/exec" method="post">
-            <label for="name">Enter Your Name:</label>
-            <input type="text" id="name" name="name" required>
-            <input type="hidden" id="timestamp" name="timestamp" value="">
-            <button type="submit" onclick="document.getElementById('timestamp').value = new Date().toISOString();">Submit Attendance</button>
-        </form>
-    </div>
+        function sendDataToGoogleSheets(lat, lng, status) {
+            const scriptURL = 'YOUR_GOOGLE_SCRIPT_URL';
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({latitude: lat, longitude: lng, access_status: status}),
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(checkLocation, () => {
+                document.getElementById("status").innerText = "Location access denied by user";
+            });
+        } else {
+            document.getElementById("status").innerText = "Geolocation not supported";
+        }
+    </script>
 </body>
 </html>
