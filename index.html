@@ -3,8 +3,9 @@
 <head>
     <title>Professional Data Form</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             background-color: #87CEEB;
             display: flex;
             justify-content: center;
@@ -16,44 +17,53 @@
         }
         .background-logo {
             position: absolute;
-            top: 10%;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            opacity: 0.7;
-            width: 200px;
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+            width: 450px;
         }
         .container {
-            background: rgba(255, 255, 255, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 350px;
+            width: 400px;
             position: relative;
             z-index: 1;
+            border: 2px solid #007BFF;
         }
         h2 {
             color: #333;
+            font-weight: 600;
         }
         select, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 2px solid #007BFF;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 400;
+            transition: 0.3s;
         }
         button {
-            background-color: #28a745;
+            background-color: #007BFF;
             color: white;
             font-size: 16px;
             cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #0056b3;
+            transform: scale(1.05);
         }
-        p {
+        .message {
             display: none;
             font-size: 14px;
+            margin-top: 10px;
         }
         .success {
             color: green;
@@ -80,44 +90,80 @@
             </select>
             <button type="submit">Submit</button>
         </form>
-        <p id="confirmation" class="success">Data Sent Successfully!</p>
-        <p id="error" class="error">Error sending data.</p>
+        <p id="confirmation" class="message success">Data Sent Successfully!</p>
+        <p id="error" class="message error">Error sending data.</p>
     </div>
     
     <script>
         function sendDataToGoogleSheets(event) {
             event.preventDefault();
             
-            const name = document.getElementById("name").value;
-            const status = document.getElementById("status").value;
-            
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbw-kUMshfJpbv4WwKyohvvmFv34cmvbYQXAtNTJHjhW4pDhsbeFw5AlEJJcBmfZKd40/exec';
-            
-            const formData = new URLSearchParams();
-            formData.append("name", name);
-            formData.append("status", status);
-            
-            fetch(scriptURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Server Response:", data);
-                if (data.result === "success") {
-                    document.getElementById("confirmation").style.display = "block";
-                    document.getElementById("error").style.display = "none";
-                } else {
-                    document.getElementById("error").innerText = "Error: " + data.error;
-                    document.getElementById("error").style.display = "block";
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById("error").innerText = "Fetch error: " + error;
-                document.getElementById("error").style.display = "block";
-            });
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const name = document.getElementById("name").value;
+                    const status = document.getElementById("status").value;
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    const farmakoLatitude = 28.22315741881459;
+                    const farmakoLongitude = 77.09913041100037;
+                    const radius = 200;
+                    
+                    const distance = getDistanceFromLatLonInMeters(latitude, longitude, farmakoLatitude, farmakoLongitude);
+                    
+                    if (distance > radius) {
+                        alert("You are outside the allowed 200-meter radius.");
+                        return;
+                    }
+                    
+                    const scriptURL = 'https://script.google.com/macros/s/AKfycbw-kUMshfJpbv4WwKyohvvmFv34cmvbYQXAtNTJHjhW4pDhsbeFw5AlEJJcBmfZKd40/exec';
+                    
+                    const formData = new URLSearchParams();
+                    formData.append("name", name);
+                    formData.append("status", status);
+                    formData.append("latitude", latitude);
+                    formData.append("longitude", longitude);
+                    
+                    fetch(scriptURL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Server Response:", data);
+                        if (data.result === "success") {
+                            document.getElementById("confirmation").style.display = "block";
+                            document.getElementById("error").style.display = "none";
+                            setTimeout(() => {
+                                document.getElementById("confirmation").style.display = "none";
+                            }, 1000);
+                        } else {
+                            document.getElementById("error").innerText = "Error: " + data.error;
+                            document.getElementById("error").style.display = "block";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById("error").innerText = "Fetch error: " + error;
+                        document.getElementById("error").style.display = "block";
+                    });
+                }, () => {
+                    alert("Location access denied. Please enable location services.");
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+        
+        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
         document.getElementById("userForm").addEventListener("submit", sendDataToGoogleSheets);
