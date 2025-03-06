@@ -7,6 +7,8 @@
     <h2>Store Access System</h2>
     <p id="status">Checking location...</p>
     <p id="confirmation" style="color: green; display: none;">Data Sent Successfully!</p>
+    <p id="error" style="color: red; display: none;">Error sending data!</p>
+
     <script>
         const storeLat = 28.22315741881459;
         const storeLng = 77.09913041100037;
@@ -30,7 +32,11 @@
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
             const distance = getDistanceFromLatLonInM(userLat, userLng, storeLat, storeLng);
-            
+
+            console.log("User Latitude:", userLat);
+            console.log("User Longitude:", userLng);
+            console.log("Distance from Store:", distance);
+
             if (distance <= accessRadius) {
                 document.getElementById("status").innerText = "Access Granted";
                 sendDataToGoogleSheets(userLat, userLng, "Granted");
@@ -46,11 +52,20 @@
                 method: 'POST',
                 body: JSON.stringify({latitude: lat, longitude: lng, access_status: status}),
                 headers: { 'Content-Type': 'application/json' }
-            }).then(response => {
-                if (response.ok) {
+            })
+            .then(response => response.text()) 
+            .then(data => {
+                console.log("Server Response:", data);
+                if (data.includes("Success")) {
                     document.getElementById("confirmation").style.display = "block";
+                } else {
+                    document.getElementById("error").style.display = "block";
                 }
-            }).catch(error => console.error('Error:', error));
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById("error").style.display = "block";
+            });
         }
 
         if (navigator.geolocation) {
