@@ -41,7 +41,7 @@
         }
 
         function sendDataToGoogleSheets(lat, lng, status) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbwGR1ExXmclcSuTyIf0ROFsbuTLmnA6guOowAyhfD_xbuJ6MBZ2t8DXXaF13fubEVQ/exec';
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbxNBLf3hRxvcCvl_7lfFF_HJ_tBXzmO1PzdQrLrH7kZClf1qXscyh8lzByQjD46FFE/exec';
             fetch(scriptURL, {
                 method: 'POST',
                 body: JSON.stringify({latitude: lat, longitude: lng, access_status: status}),
