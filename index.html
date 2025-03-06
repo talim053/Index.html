@@ -41,7 +41,7 @@
         }
 
         function sendDataToGoogleSheets(lat, lng, status) {
-            const scriptURL = 'YOUR_GOOGLE_SCRIPT_URL';
+            const scriptURL = 'https://docs.google.com/spreadsheets/d/12Cl70yjhkFa3yiIxMRHzWAh0Ho87cFOz68iay9WhFvw/edit';
             fetch(scriptURL, {
                 method: 'POST',
                 body: JSON.stringify({latitude: lat, longitude: lng, access_status: status}),
