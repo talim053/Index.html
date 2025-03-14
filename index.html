@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Website</title>
+    <title>Medicine Inventory</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #e8f5e9;
             text-align: center;
         }
         header {
-            background: #333;
+            background: #388e3c;
             color: white;
             padding: 20px;
-            font-size: 24px;
+            font-size: 26px;
+            font-weight: bold;
         }
         section {
             padding: 20px;
@@ -26,69 +27,83 @@
             margin: auto;
             border-collapse: collapse;
             background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 12px;
             text-align: left;
         }
         th {
-            background: #333;
+            background: #388e3c;
             color: white;
+            text-transform: uppercase;
         }
         input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             box-sizing: border-box;
             border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
         }
         button {
             margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #333;
+            padding: 12px 24px;
+            font-size: 18px;
+            background: #4caf50;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
+            transition: 0.3s;
         }
         button:hover {
-            background: #555;
+            background: #2e7d32;
         }
         footer {
-            background: #333;
+            background: #1b5e20;
             color: white;
             padding: 10px;
             position: fixed;
             bottom: 0;
             width: 100%;
         }
+        #loading {
+            display: none;
+            color: #4caf50;
+            margin-top: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <header>
-        Welcome to My Website
+        Medicine Inventory Management
     </header>
     <section>
-        <p>This is a simple HTML website.</p>
         <table>
             <tr>
                 <th>Medicine Name</th>
                 <th>Batch No</th>
-                <th>Expiry</th>
+                <th>Expiry (MM/YYYY)</th>
                 <th>Quantity</th>
             </tr>
             <tr>
                 <td><input type="text" id="medicine" placeholder="Enter Medicine Name"></td>
                 <td><input type="text" id="batch" placeholder="Enter Batch No"></td>
-                <td><input type="date" id="expiry" placeholder="Enter Expiry Date"></td>
+                <td><input type="text" id="expiry" placeholder="MM/YYYY"></td>
                 <td><input type="number" id="quantity" placeholder="Enter Quantity"></td>
             </tr>
         </table>
         <button type="submit" onclick="submitData()">Submit</button>
+        <p id="loading">Submitting data, please wait...</p>
         <p id="successMessage" style="color: green; display: none;">Data Submitted Successfully!</p>
     </section>
     <footer>
-        &copy; 2025 My Website. All rights reserved.
+        &copy; 2025 Medicine Inventory. All rights reserved.
     </footer>
     
     <script>
@@ -103,6 +118,8 @@
                 return;
             }
             
+            document.getElementById("loading").style.display = "block";
+            
             let formData = new FormData();
             formData.append("medicine", medicine);
             formData.append("batch", batch);
@@ -115,7 +132,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log("Response:", data);
+                document.getElementById("loading").style.display = "none";
                 if (data.result === "success") {
                     document.getElementById("successMessage").style.display = "block";
                     setTimeout(() => {
@@ -127,6 +144,7 @@
             })
             .catch(error => {
                 console.error("Error:", error);
+                document.getElementById("loading").style.display = "none";
                 alert("Failed to submit data. Please check the Google Apps Script settings.");
             });
         }
