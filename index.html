@@ -1,172 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Professional Data Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Website</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #87CEEB;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
             margin: 0;
-            position: relative;
-            overflow: hidden;
-        }
-        .background-logo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0.3;
-            width: 450px;
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            padding: 0;
+            background-color: #f4f4f4;
             text-align: center;
-            width: 400px;
-            position: relative;
-            z-index: 1;
-            border: 2px solid #007BFF;
         }
-        h2 {
-            color: #333;
-            font-weight: 600;
+        header {
+            background: #333;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
         }
-        select, button {
+        section {
+            padding: 20px;
+        }
+        table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #333;
+            color: white;
+        }
+        input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #007BFF;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 400;
-            transition: 0.3s;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
         }
         button {
-            background-color: #007BFF;
-            color: white;
+            margin-top: 20px;
+            padding: 10px 20px;
             font-size: 16px;
+            background: #333;
+            color: white;
+            border: none;
             cursor: pointer;
-            transition: 0.3s;
-            font-weight: 600;
         }
         button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
+            background: #555;
         }
-        .message {
-            display: none;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
+        footer {
+            background: #333;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <img src="https://farmako.in/_next/static/media/nav-logo-light.531ec796.svg" class="background-logo" alt="Farmako Logo">
-    <div class="container">
-        <h2>Submit Your Data</h2>
-        <form id="userForm">
-            <select id="name" name="name" required>
-                <option value="Bakir">Bakir</option>
-                <option value="Talim">Talim</option>
-                <option value="Sahil">Sahil</option>
-                <option value="Ali">Ali</option>
-            </select>
-            <select id="status" name="status" required>
-                <option value="Check In">Check In</option>
-                <option value="Check Out">Check Out</option>
-            </select>
-            <button type="submit">Submit</button>
-        </form>
-        <p id="confirmation" class="message success">Data Sent Successfully!</p>
-        <p id="error" class="message error">Error sending data.</p>
-    </div>
+    <header>
+        Welcome to My Website
+    </header>
+    <section>
+        <p>This is a simple HTML website.</p>
+        <table>
+            <tr>
+                <th>Medicine Name</th>
+                <th>Batch No</th>
+                <th>Expiry</th>
+                <th>Quantity</th>
+            </tr>
+            <tr>
+                <td><input type="text" id="medicine" placeholder="Enter Medicine Name"></td>
+                <td><input type="text" id="batch" placeholder="Enter Batch No"></td>
+                <td><input type="date" id="expiry" placeholder="Enter Expiry Date"></td>
+                <td><input type="number" id="quantity" placeholder="Enter Quantity"></td>
+            </tr>
+        </table>
+        <button type="submit" onclick="submitData()">Submit</button>
+        <p id="successMessage" style="color: green; display: none;">Data Submitted Successfully!</p>
+    </section>
+    <footer>
+        &copy; 2025 My Website. All rights reserved.
+    </footer>
     
     <script>
-        function sendDataToGoogleSheets(event) {
-            event.preventDefault();
+        function submitData() {
+            let medicine = document.getElementById("medicine").value.trim();
+            let batch = document.getElementById("batch").value.trim();
+            let expiry = document.getElementById("expiry").value.trim();
+            let quantity = document.getElementById("quantity").value.trim();
             
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const name = document.getElementById("name").value;
-                    const status = document.getElementById("status").value;
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
-                    const farmakoLatitude = 28.22315741881459;
-                    const farmakoLongitude = 77.09913041100037;
-                    const radius = 200;
-                    
-                    const distance = getDistanceFromLatLonInMeters(latitude, longitude, farmakoLatitude, farmakoLongitude);
-                    
-                    if (distance > radius) {
-                        alert("You are outside the allowed 200-meter radius.");
-                        return;
-                    }
-                    
-                    const scriptURL = 'https://script.google.com/macros/s/AKfycbw-kUMshfJpbv4WwKyohvvmFv34cmvbYQXAtNTJHjhW4pDhsbeFw5AlEJJcBmfZKd40/exec';
-                    
-                    const formData = new URLSearchParams();
-                    formData.append("name", name);
-                    formData.append("status", status);
-                    formData.append("latitude", latitude);
-                    formData.append("longitude", longitude);
-                    
-                    fetch(scriptURL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Server Response:", data);
-                        if (data.result === "success") {
-                            document.getElementById("confirmation").style.display = "block";
-                            document.getElementById("error").style.display = "none";
-                            setTimeout(() => {
-                                document.getElementById("confirmation").style.display = "none";
-                            }, 1000);
-                        } else {
-                            document.getElementById("error").innerText = "Error: " + data.error;
-                            document.getElementById("error").style.display = "block";
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        document.getElementById("error").innerText = "Fetch error: " + error;
-                        document.getElementById("error").style.display = "block";
-                    });
-                }, () => {
-                    alert("Location access denied. Please enable location services.");
-                });
-            } else {
-                alert("Geolocation is not supported by your browser.");
+            if (!medicine || !batch || !expiry || !quantity) {
+                alert("Please fill out all fields before submitting.");
+                return;
             }
+            
+            let formData = new FormData();
+            formData.append("medicine", medicine);
+            formData.append("batch", batch);
+            formData.append("expiry", expiry);
+            formData.append("quantity", quantity);
+            
+            fetch("https://script.google.com/macros/s/AKfycbzivt-RBXRSTY4Qbqb9UanBck1MudGyYArsCEHZtaugK26u50DCug5ccpDjNwDVgxsu/exec", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response:", data);
+                if (data.result === "success") {
+                    document.getElementById("successMessage").style.display = "block";
+                    setTimeout(() => {
+                        document.getElementById("successMessage").style.display = "none";
+                    }, 3000);
+                } else {
+                    alert("Error: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to submit data. Please check the Google Apps Script settings.");
+            });
         }
-        
-        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        document.getElementById("userForm").addEventListener("submit", sendDataToGoogleSheets);
     </script>
 </body>
 </html>
