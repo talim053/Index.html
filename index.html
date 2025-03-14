@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicine Inventory</title>
+    <title>Medicine Inventory Issue</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #e8f5e9;
+            background-color: #f4f4f4;
             text-align: center;
         }
         header {
-            background: #388e3c;
+            background: #00695c;
             color: white;
             padding: 20px;
             font-size: 26px;
@@ -37,7 +37,7 @@
             text-align: left;
         }
         th {
-            background: #388e3c;
+            background: #00695c;
             color: white;
             text-transform: uppercase;
         }
@@ -53,7 +53,7 @@
             margin-top: 20px;
             padding: 12px 24px;
             font-size: 18px;
-            background: #4caf50;
+            background: #00897b;
             color: white;
             border: none;
             border-radius: 5px;
@@ -61,10 +61,10 @@
             transition: 0.3s;
         }
         button:hover {
-            background: #2e7d32;
+            background: #004d40;
         }
         footer {
-            background: #1b5e20;
+            background: #004d40;
             color: white;
             padding: 10px;
             position: fixed;
@@ -73,7 +73,7 @@
         }
         #loading {
             display: none;
-            color: #4caf50;
+            color: #00897b;
             margin-top: 10px;
             font-size: 16px;
         }
@@ -81,7 +81,7 @@
 </head>
 <body>
     <header>
-        Medicine Inventory Management
+        Medicine Inventory Issue
     </header>
     <section>
         <table>
@@ -105,18 +105,18 @@
         <p id="successMessage" style="color: green; display: none;">Data Submitted Successfully!</p>
     </section>
     <footer>
-        &copy; 2025 Medicine Inventory. All rights reserved.
+        &copy; 2025 Medicine Inventory Issue. All rights reserved.
     </footer>
     
     <script>
         function submitData() {
-            let medicine = document.getElementById("medicine").value.trim();
-            let batch = document.getElementById("batch").value.trim();
-            let expiry = document.getElementById("expiry").value.trim();
-            let quantity = document.getElementById("quantity").value.trim();
-            let medicineIssue = document.getElementById("medicineIssue").value.trim();
+            let medicine = document.getElementById("medicine");
+            let batch = document.getElementById("batch");
+            let expiry = document.getElementById("expiry");
+            let quantity = document.getElementById("quantity");
+            let medicineIssue = document.getElementById("medicineIssue");
             
-            if (!medicine || !batch || !expiry || !quantity || !medicineIssue) {
+            if (!medicine.value.trim() || !batch.value.trim() || !expiry.value.trim() || !quantity.value.trim() || !medicineIssue.value.trim()) {
                 alert("Please fill out all fields before submitting.");
                 return;
             }
@@ -124,11 +124,11 @@
             document.getElementById("loading").style.display = "block";
             
             let formData = new FormData();
-            formData.append("medicine", medicine);
-            formData.append("batch", batch);
-            formData.append("expiry", expiry);
-            formData.append("quantity", quantity);
-            formData.append("medicineIssue", medicineIssue);
+            formData.append("medicine", medicine.value.trim());
+            formData.append("batch", batch.value.trim());
+            formData.append("expiry", expiry.value.trim());
+            formData.append("quantity", quantity.value.trim());
+            formData.append("medicineIssue", medicineIssue.value.trim());
             
             fetch("https://script.google.com/macros/s/AKfycbyHwKxXJQpNIeIvcHfgN_-wqIUI7zGoe7LchHs8p__lT3MEt97km9luzoGBJ0RuTYKH/exec", {
                 method: "POST",
@@ -142,6 +142,13 @@
                     setTimeout(() => {
                         document.getElementById("successMessage").style.display = "none";
                     }, 3000);
+                    
+                    // Clear input fields after successful submission
+                    medicine.value = "";
+                    batch.value = "";
+                    expiry.value = "";
+                    quantity.value = "";
+                    medicineIssue.value = "";
                 } else {
                     alert("Error: " + data.error);
                 }
