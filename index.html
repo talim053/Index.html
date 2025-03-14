@@ -90,12 +90,14 @@
                 <th>Batch No</th>
                 <th>Expiry (MM/YYYY)</th>
                 <th>Quantity</th>
+                <th>Medicine Issue</th>
             </tr>
             <tr>
                 <td><input type="text" id="medicine" placeholder="Enter Medicine Name"></td>
                 <td><input type="text" id="batch" placeholder="Enter Batch No"></td>
                 <td><input type="text" id="expiry" placeholder="MM/YYYY"></td>
                 <td><input type="number" id="quantity" placeholder="Enter Quantity"></td>
+                <td><input type="text" id="medicineIssue" placeholder="Enter Medicine Issue"></td>
             </tr>
         </table>
         <button type="submit" onclick="submitData()">Submit</button>
@@ -112,8 +114,9 @@
             let batch = document.getElementById("batch").value.trim();
             let expiry = document.getElementById("expiry").value.trim();
             let quantity = document.getElementById("quantity").value.trim();
+            let medicineIssue = document.getElementById("medicineIssue").value.trim();
             
-            if (!medicine || !batch || !expiry || !quantity) {
+            if (!medicine || !batch || !expiry || !quantity || !medicineIssue) {
                 alert("Please fill out all fields before submitting.");
                 return;
             }
@@ -125,8 +128,9 @@
             formData.append("batch", batch);
             formData.append("expiry", expiry);
             formData.append("quantity", quantity);
+            formData.append("medicineIssue", medicineIssue);
             
-            fetch("https://script.google.com/macros/s/AKfycbzivt-RBXRSTY4Qbqb9UanBck1MudGyYArsCEHZtaugK26u50DCug5ccpDjNwDVgxsu/exec", {
+            fetch("https://script.google.com/macros/s/AKfycbyHwKxXJQpNIeIvcHfgN_-wqIUI7zGoe7LchHs8p__lT3MEt97km9luzoGBJ0RuTYKH/exec", {
                 method: "POST",
                 body: formData
             })
